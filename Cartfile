@@ -5,3 +5,4 @@ github "mddub/dexcom-share-client-swift" ~> 0.2.0
 github "mddub/G4ShareSpy" ~> 0.3.0
 github "ps2/rileylink_ios" ~> 0.12.6
 github "amplitude/Amplitude-iOS" ~> 3.8.5
+github "pebble/pebble-ios-sdk"

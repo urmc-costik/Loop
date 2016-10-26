@@ -10,12 +10,17 @@ import UIKit
 import UserNotifications
 import CarbKit
 import InsulinKit
+import PebbleKit
+
 
 @UIApplicationMain
-final class AppDelegate: UIResponder, UIApplicationDelegate {
+final class AppDelegate: UIResponder, UIApplicationDelegate, PBPebbleCentralDelegate {
 
     var window: UIWindow?
+    var pebbleCentral : PBPebbleCentral?
+    var watch: PBWatch?
 
+    
     private(set) lazy var dataManager = DeviceDataManager()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
@@ -29,6 +34,14 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             let statusVC = navVC.viewControllers.first as? StatusTableViewController {
             statusVC.dataManager = dataManager
         }
+        
+        pebbleCentral = PBPebbleCentral.default()
+        pebbleCentral?.delegate = self
+        var uuidBytes = Array<UInt8>(repeating: 0, count: 16)
+        let uuid = UUID(uuidString: "YOUR_UUID_HERE")
+        (uuid as NSUUID?)?.getBytes(&uuidBytes)
+        pebbleCentral?.appUUID = uuid
+        pebbleCentral?.run()
 
         return true
     }
@@ -65,6 +78,25 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
         completionHandler(false)
+    }
+    
+    
+    func pebbleCentral(_ central: PBPebbleCentral, watchDidConnect watch: PBWatch, isNew: Bool) {
+        print("Pebble did connect: \(watch.name)")
+        self.watch = watch
+        self.watch?.appMessagesLaunch({ (watch, error) in
+
+        })
+        self.watch?.appMessagesAddReceiveUpdateHandler{ (watch,command) -> Bool in
+            return true
+        }
+    }
+    
+    func pebbleCentral(_ central: PBPebbleCentral, watchDidDisconnect watch: PBWatch) {
+        print("Pebble did disconnect: \(watch.name)")
+        if (self.watch == watch) {
+            self.watch = nil
+        }
     }
 }
 
